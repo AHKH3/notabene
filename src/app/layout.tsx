@@ -67,13 +67,22 @@ export const metadata: Metadata = {
     description:
       "Chat with AI on one side, a living note on the other. An AI Curator distils what matters — your words verbatim, the AI's summarised. Open source, local-first, BYOK.",
     url: SITE.url,
-    // og image is provided by the app/opengraph-image convention.
+    images: [
+      {
+        url: `${SITE.url}/og.png`,
+        width: 1200,
+        height: 630,
+        alt: "Notabene — Think in the margin",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Notabene — Think in the margin",
     description:
       "A local-first, open-source AI thinking tool. Chat + a living note, curated by AI. Bring your own key.",
+    images: [`${SITE.url}/og.png`],
   },
   icons: {
     icon: [{ url: asset("/favicon.svg"), type: "image/svg+xml" }],
