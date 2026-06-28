@@ -1,0 +1,96 @@
+"use client";
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+} from "react";
+import { useStore } from "./store";
+import { complete, ApiError, type ApiErrorCode } from "@/lib/openai";
+import { buildCuratorMessages } from "@/lib/curator";
+
+interface CuratorState {
+  curating: boolean;
+  /** A proposed note awaiting the user's accept/discard. */
+  proposal: string | null;
+  error: ApiErrorCode | null;
+  /** Set briefly when the Curator suggests nothing new. */
+  unchanged: boolean;
+  run: (autoApply?: boolean) => Promise<void>;
+  accept: () => void;
+  discard: () => void;
+}
+
+const Ctx = createContext<CuratorState | null>(null);
+
+export function CuratorProvider({ children }: { children: React.ReactNode }) {
+  const { active, settings, setNote } = useStore();
+  const [curating, setCurating] = useState(false);
+  const [proposal, setProposal] = useState<string | null>(null);
+  const [error, setError] = useState<ApiErrorCode | null>(null);
+  const [unchanged, setUnchanged] = useState(false);
+  const unchangedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const run = useCallback(
+    async (autoApply = false) => {
+      if (!active || curating) return;
+      setError(null);
+      setUnchanged(false);
+      setCurating(true);
+      try {
+        const messages = buildCuratorMessages(active.messages, active.note);
+        const model = settings.curatorModel.trim() || settings.model;
+        const text = await complete({
+          baseUrl: settings.baseUrl,
+          apiKey: settings.apiKey,
+          model,
+          messages,
+          temperature: 0.3,
+        });
+        const proposed = stripFences(text).trim();
+        if (!proposed || proposed === active.note.trim()) {
+          setUnchanged(true);
+          if (unchangedTimer.current) clearTimeout(unchangedTimer.current);
+          unchangedTimer.current = setTimeout(() => setUnchanged(false), 2600);
+          return;
+        }
+        if (autoApply) setNote(proposed);
+        else setProposal(proposed);
+      } catch (err) {
+        setError(err instanceof ApiError ? err.code : "unknown");
+      } finally {
+        setCurating(false);
+      }
+    },
+    [active, curating, settings, setNote],
+  );
+
+  const accept = useCallback(() => {
+    if (proposal !== null) setNote(proposal);
+    setProposal(null);
+  }, [proposal, setNote]);
+
+  const discard = useCallback(() => setProposal(null), []);
+
+  return (
+    <Ctx.Provider
+      value={{ curating, proposal, error, unchanged, run, accept, discard }}
+    >
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+/** Models sometimes wrap the whole note in a ```markdown fence — strip it. */
+function stripFences(text: string): string {
+  const m = text.trim().match(/^```[a-zA-Z]*\n([\s\S]*?)\n```$/);
+  return m ? m[1] : text;
+}
+
+export function useCurator(): CuratorState {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("useCurator must be used within CuratorProvider");
+  return ctx;
+}
