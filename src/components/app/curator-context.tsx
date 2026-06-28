@@ -10,6 +10,12 @@ import {
 import { useStore } from "./store";
 import { complete, ApiError, type ApiErrorCode } from "@/lib/openai";
 import { buildCuratorMessages } from "@/lib/curator";
+import type { ChatMessage } from "@/lib/types";
+
+interface CuratorInput {
+  messages: ChatMessage[];
+  note: string;
+}
 
 interface CuratorState {
   curating: boolean;
@@ -18,7 +24,9 @@ interface CuratorState {
   error: ApiErrorCode | null;
   /** Set briefly when the Curator suggests nothing new. */
   unchanged: boolean;
-  run: (autoApply?: boolean) => Promise<void>;
+  /** `override` lets a caller curate freshly-produced state (e.g. the reply
+   *  that React hasn't committed to `active` yet) instead of stale context. */
+  run: (autoApply?: boolean, override?: CuratorInput) => Promise<void>;
   accept: () => void;
   discard: () => void;
 }
@@ -34,13 +42,14 @@ export function CuratorProvider({ children }: { children: React.ReactNode }) {
   const unchangedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const run = useCallback(
-    async (autoApply = false) => {
-      if (!active || curating) return;
+    async (autoApply = false, override?: CuratorInput) => {
+      const source = override ?? active;
+      if (!source || curating) return;
       setError(null);
       setUnchanged(false);
       setCurating(true);
       try {
-        const messages = buildCuratorMessages(active.messages, active.note);
+        const messages = buildCuratorMessages(source.messages, source.note);
         const model = settings.curatorModel.trim() || settings.model;
         const text = await complete({
           baseUrl: settings.baseUrl,
@@ -50,7 +59,7 @@ export function CuratorProvider({ children }: { children: React.ReactNode }) {
           temperature: 0.3,
         });
         const proposed = stripFences(text).trim();
-        if (!proposed || proposed === active.note.trim()) {
+        if (!proposed || proposed === source.note.trim()) {
           setUnchanged(true);
           if (unchangedTimer.current) clearTimeout(unchangedTimer.current);
           unchangedTimer.current = setTimeout(() => setUnchanged(false), 2600);

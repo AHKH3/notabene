@@ -109,8 +109,11 @@ export function Chat() {
         content: full,
         createdAt: Date.now(),
       };
-      setMessages([...history, assistant]);
-      if (settings.autoCurate) void curator.run(true);
+      const updated = [...history, assistant];
+      setMessages(updated);
+      if (settings.autoCurate) {
+        void curator.run(true, { messages: updated, note: active?.note ?? "" });
+      }
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "unknown";
       if (code === "aborted") {
