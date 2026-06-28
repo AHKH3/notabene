@@ -36,8 +36,9 @@ jobs:
       - name: Build (static export)
         env:
           # Pages serves a project site under /<repo>; basePath must match.
+          # SITE_URL is left at its default (the Vercel canonical) so this
+          # mirror points search engines at the primary deployment.
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
-          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.origin }}${{ steps.pages.outputs.base_path }}
         run: npm run build
 
       - name: Disable Jekyll (keep _next/)

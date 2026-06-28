@@ -13,7 +13,7 @@ A local-first, open-source AI thinking tool. Chat on one side, a living note on 
 ![Local-first](https://img.shields.io/badge/local--first-no%20server-16130f.svg?style=flat-square)
 ![BYOK](https://img.shields.io/badge/BYOK-OpenAI--compatible-16130f.svg?style=flat-square)
 
-[**Open the app**](https://ahkh3.github.io/notabene/app/) · [العربية](#بالعربية)
+[**Open the app**](https://notabene-eight.vercel.app/app/) · [العربية](#بالعربية)
 
 </div>
 
@@ -80,11 +80,12 @@ npm run build
 
 ## Deploy
 
-Notabene is a fully static export — host the `out/` folder anywhere.
+Notabene is a fully static export — host the `out/` folder anywhere. The live
+build runs on **[Vercel](https://notabene-eight.vercel.app)**.
 
-- **GitHub Pages** — push to `main`; the included workflow ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)) builds with the correct `basePath` and publishes automatically. Enable Pages → *Source: GitHub Actions*.
-- **Vercel / Netlify** — import the repo; no configuration needed (leave `NEXT_PUBLIC_BASE_PATH` unset).
-- **Custom domain or root host** — leave `NEXT_PUBLIC_BASE_PATH` empty and set `NEXT_PUBLIC_SITE_URL` to your domain for correct canonical/OG URLs.
+- **Vercel / Netlify** *(recommended)* — import the repo; no configuration needed (leave `NEXT_PUBLIC_BASE_PATH` unset). Set `NEXT_PUBLIC_SITE_URL` to your domain for correct canonical/OG URLs.
+- **GitHub Pages** — the included workflow ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)) builds with the correct `basePath` and publishes on push. Enable Pages → *Source: GitHub Actions*.
+- **Any static host** — `npm run build` and serve `out/`.
 
 ## Privacy
 
@@ -120,7 +121,7 @@ Issues and pull requests are welcome. Keep it monochrome, keep it local-first.
 
 **التشغيل:** `npm install` ثم `npm run dev`. **النشر:** ملفات ثابتة في `out/` تُستضاف في أي مكان.
 
-افتح التطبيق: <https://ahkh3.github.io/notabene/app/>
+افتح التطبيق: <https://notabene-eight.vercel.app/app/>
 
 ---
 
