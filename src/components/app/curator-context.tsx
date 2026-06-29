@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -40,6 +41,19 @@ export function CuratorProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<ApiErrorCode | null>(null);
   const [unchanged, setUnchanged] = useState(false);
   const unchangedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeRef = useRef({ id: active?.id, ts: active?.updatedAt });
+
+  // Discard any stale curator proposal when the conversation changes.
+  useEffect(() => {
+    if (!active) return;
+    const prev = activeRef.current;
+    if (prev.id !== active.id || prev.ts !== active.updatedAt) {
+      setProposal(null);
+      setError(null);
+      setUnchanged(false);
+      activeRef.current = { id: active.id, ts: active.updatedAt };
+    }
+  }, [active?.id, active?.updatedAt]);
 
   const run = useCallback(
     async (autoApply = false, override?: CuratorInput) => {
@@ -94,7 +108,7 @@ export function CuratorProvider({ children }: { children: React.ReactNode }) {
 
 /** Models sometimes wrap the whole note in a ```markdown fence — strip it. */
 function stripFences(text: string): string {
-  const m = text.trim().match(/^```[a-zA-Z]*\n([\s\S]*?)\n```\s*$/);
+  const m = text.trim().match(/^```[a-zA-Z]*\n([\s\S]*?)\n?```\s*$/);
   return m ? m[1] : text;
 }
 

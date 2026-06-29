@@ -135,6 +135,8 @@ export const dict = {
       clear: "Clear",
       wordSingular: "word",
       wordPlural: "words",
+      openSidebar: "Open sidebar",
+      toggleTheme: "Toggle theme",
       settings: "Settings",
       connectTitle: "Connect a provider to begin",
       connectBody:
@@ -310,6 +312,8 @@ export const dict = {
       clear: "مسح",
       wordSingular: "كلمة",
       wordPlural: "كلمة",
+      openSidebar: "فتح الشريط الجانبي",
+      toggleTheme: "تبديل السمة",
       settings: "الإعدادات",
       connectTitle: "اربط مزوّدًا لتبدأ",
       connectBody:

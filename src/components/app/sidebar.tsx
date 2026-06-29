@@ -52,7 +52,7 @@ export function Sidebar({
           </span>
           <span className="font-display text-lg tracking-tight">{dict.brand}</span>
         </Link>
-        <IconButton icon="theme" label={t.settings} onClick={() => {
+        <IconButton icon="theme" label={t.toggleTheme} onClick={() => {
           const order = ["light", "dark", "system"] as const;
           const next = order[(order.indexOf(settings.theme) + 1) % 3];
           updateSettings({ theme: next });

@@ -205,7 +205,7 @@ export function SettingsModal({
           <input
             type="range"
             min={0}
-            max={1.5}
+            max={2}
             step={0.1}
             value={settings.temperature}
             onChange={(e) =>

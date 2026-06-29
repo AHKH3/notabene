@@ -346,7 +346,7 @@ function Msg({
 /** Pull the leading **bold** label out of a markdown line for styled display. */
 function strongLabel(line: string, locale: Locale): string {
   const m = line.match(/^\*\*(.+?)\*\*/);
-  return m ? m[1] + (locale === "ar" ? " " : " ") : "";
+  return m ? m[1] + " " : "";
 }
 function strongRest(line: string): string {
   return line.replace(/^\*\*(.+?)\*\*/, "").trim() + "";

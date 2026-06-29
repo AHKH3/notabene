@@ -73,7 +73,7 @@ export function AppShell() {
         {/* Mobile top bar */}
         <div className="flex items-center gap-2 border-b border-line px-2 py-2 md:hidden">
           <button
-            aria-label={t.settings}
+            aria-label={t.openSidebar}
             onClick={() => setSidebarOpen(true)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-sm text-ink-2 hover:bg-paper-2"
           >
