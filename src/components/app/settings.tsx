@@ -165,7 +165,7 @@ export function SettingsModal({
               type="button"
               onClick={() => setShowKey((s) => !s)}
               className="absolute inset-y-0 end-2 my-auto flex h-7 w-7 items-center justify-center rounded-sm text-ink-3 hover:text-ink"
-              aria-label={showKey ? "Hide" : "Show"}
+              aria-label={showKey ? t.hideKey : t.showKey}
             >
               <Icon name={showKey ? "eyeOff" : "eye"} size={16} />
             </button>

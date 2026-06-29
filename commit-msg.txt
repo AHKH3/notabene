@@ -1,0 +1,6 @@
+polish(🌐,🧹): round 3 of refinements
+
+- i18n: replace hardcoded "You"/"AI"/"أنت"/"الذكاء" labels with t.you/t.ai
+- fix: clear chat input when switching active conversation
+- i18n: replace hardcoded "Hide"/"Show" with t.hideKey/t.showKey in settings
+- cleanup: remove unused isArabic prop from Bubble component

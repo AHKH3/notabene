@@ -7,23 +7,23 @@ import { Icon } from "@/components/icon";
 import { Spinner } from "./ui";
 import { renderMarkdown } from "@/lib/markdown";
 import { streamChat, ApiError, type ApiErrorCode } from "@/lib/openai";
-import { errorText } from "@/lib/i18n";
+import { errorText, type Dict } from "@/lib/i18n";
 import type { ChatMessage } from "@/lib/types";
 import { uid } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 function Bubble({
   message,
-  isArabic,
+  t,
 }: {
   message: ChatMessage;
-  isArabic: boolean;
+  t: Dict["app"];
 }) {
   const isUser = message.role === "user";
   return (
     <div className={cn("flex flex-col gap-1", isUser ? "items-end" : "items-start")}>
       <span className="px-1 text-[10px] uppercase tracking-[0.16em] text-ink-3">
-        {isUser ? (isArabic ? "أنت" : "You") : (isArabic ? "الذكاء" : "AI")}
+        {isUser ? t.you : t.ai}
       </span>
       <div
         className={cn(
@@ -56,6 +56,11 @@ export function Chat() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [streamText, setStreamText] = useState("");
+
+  // Clear input when the active conversation changes.
+  useEffect(() => {
+    setInput("");
+  }, [active?.id]);
   const [error, setError] = useState<ApiErrorCode | null>(null);
   const streamRef = useRef("");
   const abortRef = useRef<AbortController | null>(null);
@@ -195,13 +200,13 @@ export function Chat() {
             </p>
           </div>
         ) : (
-          messages.map((m) => <Bubble key={m.id} message={m} isArabic={isArabic} />)
+          messages.map((m) => <Bubble key={m.id} message={m} t={t} />)
         )}
 
         {streaming ? (
           <div className="flex flex-col items-start gap-1">
             <span className="px-1 text-[10px] uppercase tracking-[0.16em] text-ink-3">
-              {isArabic ? "الذكاء" : "AI"}
+              {t.ai}
             </span>
             <div className="max-w-[88%] rounded-sm border border-line bg-paper px-4 py-3 text-[15px] leading-relaxed text-ink">
               {streamText ? (

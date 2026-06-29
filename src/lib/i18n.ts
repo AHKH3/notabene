@@ -146,6 +146,8 @@ export const dict = {
         "Notabene needs an OpenAI-compatible endpoint and a key. Everything stays in this browser.",
       openSettings: "Open settings",
       retry: "Retry",
+      you: "You",
+      ai: "AI",
     },
     settings: {
       title: "Settings",
@@ -171,6 +173,8 @@ export const dict = {
       clearAll: "Clear all local data",
       clearAllConfirm:
         "This deletes every conversation, note and setting stored in this browser. Continue?",
+      showKey: "Show API key",
+      hideKey: "Hide API key",
     },
     errors: {
       "no-config": "No provider is configured. Open settings to add one.",
@@ -326,6 +330,8 @@ export const dict = {
         "يحتاج نوتابيني إلى نقطة وصول متوافقة مع OpenAI ومفتاح. كل شيء يبقى في هذا المتصفح.",
       openSettings: "افتح الإعدادات",
       retry: "إعادة المحاولة",
+      you: "أنت",
+      ai: "الذكاء",
     },
     settings: {
       title: "الإعدادات",
@@ -351,6 +357,8 @@ export const dict = {
       clearAll: "مسح كل البيانات المحلية",
       clearAllConfirm:
         "سيحذف هذا كل المحادثات والهوامش والإعدادات المخزَّنة في هذا المتصفح. أتُتابع؟",
+      showKey: "إظهار مفتاح API",
+      hideKey: "إخفاء مفتاح API",
     },
     errors: {
       "no-config": "لا يوجد مزوّد مُعدّ. افتح الإعدادات لإضافة واحد.",
