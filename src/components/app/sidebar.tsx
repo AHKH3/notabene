@@ -133,7 +133,7 @@ export function Sidebar({
                     e.stopPropagation();
                     if (window.confirm(t.deleteConfirm)) deleteConversation(c.id);
                   }}
-                  className="absolute end-1.5 top-1/2 hidden -translate-y-1/2 rounded-sm p-1 text-ink-3 hover:bg-paper-3 hover:text-ink group-hover:block"
+                  className="absolute end-1.5 top-1/2 hidden -translate-y-1/2 rounded-sm p-1 text-ink-3 hover:bg-paper-3 hover:text-ink group-hover:block max-md:block"
                 >
                   <Icon name="delete" size={15} />
                 </button>

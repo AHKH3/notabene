@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useStore } from "./store";
 import { Sidebar } from "./sidebar";
 import { Chat } from "./chat";
@@ -11,7 +11,7 @@ import { clamp } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 export function AppShell() {
-  const { hydrated, dict, isConfigured, dir } = useStore();
+  const { hydrated, dict, isConfigured, dir, newConversation } = useStore();
   const t = dict.app;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -31,6 +31,18 @@ export function AppShell() {
     },
     [dir],
   );
+
+  // Ctrl/Cmd + N → new conversation
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "n") {
+        e.preventDefault();
+        newConversation();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [newConversation]);
 
   if (!hydrated) {
     return (
@@ -108,7 +120,7 @@ export function AppShell() {
         {!isConfigured ? (
           <button
             onClick={() => setSettingsOpen(true)}
-            className="flex items-center justify-center gap-2 border-b border-line bg-paper-2 px-4 py-2 text-sm text-ink-2 hover:text-ink"
+            className="flex cursor-pointer items-center justify-center gap-2 border-b border-line bg-paper-2 px-4 py-2 text-sm text-ink-2 hover:text-ink"
           >
             <Icon name="settings" size={15} />
             <span>{t.connectTitle}</span>

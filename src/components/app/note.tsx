@@ -52,7 +52,7 @@ export function Note() {
                 mode === "write" ? "bg-ink text-paper" : "text-ink-3 hover:text-ink",
               )}
             >
-              {settings.locale === "ar" ? "كتابة" : "Write"}
+              {t.writeTab}
             </button>
             <button
               onClick={() => setMode("read")}
@@ -61,7 +61,7 @@ export function Note() {
                 mode === "read" ? "bg-ink text-paper" : "text-ink-3 hover:text-ink",
               )}
             >
-              {settings.locale === "ar" ? "قراءة" : "Read"}
+              {t.readTab}
             </button>
           </div>
         ) : null}
@@ -117,7 +117,7 @@ export function Note() {
                       : "text-ink-3 hover:text-ink",
                   )}
                 >
-                  {settings.locale === "ar" ? "الحالي" : "Current"}
+                  {t.currentTab}
                 </button>
               </div>
             </div>

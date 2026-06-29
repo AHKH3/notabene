@@ -111,6 +111,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
   }, [conversations, hydrated]);
 
+  // ---- Persist conversations on page hide (prevent data loss) -----------
+  useEffect(() => {
+    if (!hydrated) return;
+    const handle = () => {
+      if (document.hidden) {
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+        saveConversations(conversations);
+      }
+    };
+    document.addEventListener("visibilitychange", handle);
+    return () => document.removeEventListener("visibilitychange", handle);
+  }, [conversations, hydrated]);
+
   useEffect(() => {
     if (hydrated) saveActiveId(activeId);
   }, [activeId, hydrated]);
