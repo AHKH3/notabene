@@ -14,6 +14,8 @@ export const dict = {
       openSource: "Open source",
       launch: "Open the app",
       github: "GitHub",
+      switchLang: "العربية",
+      themeLabel: "Toggle theme",
     },
     hero: {
       eyebrow: "nota bene — “note well”",
@@ -200,6 +202,8 @@ export const dict = {
       openSource: "مفتوح المصدر",
       launch: "افتح التطبيق",
       github: "غِت‌هَب",
+      switchLang: "English",
+      themeLabel: "تبديل السمة",
     },
     hero: {
       eyebrow: "نوتا بيني — «لاحِظ جيدًا»",

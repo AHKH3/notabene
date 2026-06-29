@@ -19,7 +19,6 @@ export function Landing({ locale }: { locale: Locale }) {
   const d = getDict(locale);
   const isAr = locale === "ar";
   const otherHref = isAr ? "/" : "/ar";
-  const switchLabel = isAr ? "English" : "العربية";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -63,9 +62,9 @@ export function Landing({ locale }: { locale: Locale }) {
               href={otherHref}
               className="inline-flex h-9 items-center rounded-sm px-2.5 text-sm text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
             >
-              {switchLabel}
+              {d.nav.switchLang}
             </Link>
-            <ThemeToggle label="Theme" />
+            <ThemeToggle label={d.nav.themeLabel} />
             <a
               href={SITE.repo}
               target="_blank"
@@ -302,11 +301,11 @@ function DemoMock({ locale }: { locale: Locale }) {
             {m.n2.replace(/^>\s*/, "")}
           </blockquote>
           <p className="text-[13px] leading-relaxed text-ink">
-            <strong className="font-semibold">{strongLabel(m.n3, locale)}</strong>
+            <strong className="font-semibold">{strongLabel(m.n3)}</strong>
             {strongRest(m.n3)}
           </p>
           <p className="mt-1.5 text-[13px] leading-relaxed text-ink">
-            <strong className="font-semibold">{strongLabel(m.n4, locale)}</strong>
+            <strong className="font-semibold">{strongLabel(m.n4)}</strong>
             {strongRest(m.n4)}
           </p>
           <div className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink px-3 py-1.5 text-[11px] text-paper">
@@ -344,7 +343,7 @@ function Msg({
 }
 
 /** Pull the leading **bold** label out of a markdown line for styled display. */
-function strongLabel(line: string, locale: Locale): string {
+function strongLabel(line: string): string {
   const m = line.match(/^\*\*(.+?)\*\*/);
   return m ? m[1] + " " : "";
 }

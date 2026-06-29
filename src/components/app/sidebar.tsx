@@ -158,6 +158,7 @@ export function Sidebar({
           onClick={() =>
             updateSettings({ locale: settings.locale === "ar" ? "en" : "ar" })
           }
+          aria-label={settings.locale === "ar" ? "English" : "العربية"}
           className="inline-flex items-center gap-1.5 rounded-sm px-2 py-1.5 text-sm text-ink-2 hover:bg-paper hover:text-ink"
         >
           <Icon name="translate" size={16} />

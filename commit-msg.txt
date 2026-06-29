@@ -1,7 +1,7 @@
-polish(♿,🧹): round 4 of refinements
+polish(🌐,♿,🧹): round 5 of refinements
 
-- fix: rename settings "Save" button to "Done" (everything auto-saves; "Save" was misleading)
-- a11y: add aria-pressed to provider selection buttons
-- a11y: add aria-label to temperature range slider
-- fix: differentiate "no conversations" from "no search results" in sidebar
-- fix: clean up dead code path in note clear-note handler
+- i18n: add switchLang and themeLabel keys to nav dict
+- fix: landing page language toggle now uses d.nav.switchLang instead of hardcoded "English"/"العربية"
+- fix: landing page ThemeToggle now uses d.nav.themeLabel instead of hardcoded "Theme"
+- a11y: add aria-label to sidebar locale toggle button
+- fix: remove unused locale parameter from strongLabel helper
