@@ -94,7 +94,7 @@ export function CuratorProvider({ children }: { children: React.ReactNode }) {
 
 /** Models sometimes wrap the whole note in a ```markdown fence — strip it. */
 function stripFences(text: string): string {
-  const m = text.trim().match(/^```[a-zA-Z]*\n([\s\S]*?)\n```$/);
+  const m = text.trim().match(/^```[a-zA-Z]*\n([\s\S]*?)\n```\s*$/);
   return m ? m[1] : text;
 }
 

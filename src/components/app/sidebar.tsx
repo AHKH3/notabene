@@ -82,9 +82,22 @@ export function Sidebar({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setQuery("");
+            }}
             placeholder={t.searchPlaceholder}
-            className="w-full rounded-sm border border-line bg-field py-1.5 ps-8 pe-3 text-sm outline-none placeholder:text-ink-3 focus:border-ink-2"
+            className="w-full rounded-sm border border-line bg-field py-1.5 ps-8 pe-9 text-sm outline-none placeholder:text-ink-3 focus:border-ink-2"
           />
+          {query ? (
+            <button
+              onClick={() => setQuery("")}
+              aria-label={t.clear}
+              title={t.clear}
+              className="absolute inset-y-0 end-2 flex items-center text-ink-3 hover:text-ink"
+            >
+              <Icon name="close" size={15} />
+            </button>
+          ) : null}
         </div>
       </div>
 

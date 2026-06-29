@@ -131,7 +131,10 @@ export const dict = {
       copied: "Copied",
       copyNote: "Copy note",
       clearNote: "Clear note",
-      words: "words",
+      clearNoteConfirm: "Clear note?",
+      clear: "Clear",
+      wordSingular: "word",
+      wordPlural: "words",
       settings: "Settings",
       connectTitle: "Connect a provider to begin",
       connectBody:
@@ -303,7 +306,10 @@ export const dict = {
       copied: "تم النسخ",
       copyNote: "نسخ الهامش",
       clearNote: "مسح الهامش",
-      words: "كلمة",
+      clearNoteConfirm: "مسح الهامش؟",
+      clear: "مسح",
+      wordSingular: "كلمة",
+      wordPlural: "كلمة",
       settings: "الإعدادات",
       connectTitle: "اربط مزوّدًا لتبدأ",
       connectBody:

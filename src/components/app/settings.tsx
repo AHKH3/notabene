@@ -167,7 +167,7 @@ export function SettingsModal({
               className="absolute inset-y-0 end-2 my-auto flex h-7 w-7 items-center justify-center rounded-sm text-ink-3 hover:text-ink"
               aria-label={showKey ? "Hide" : "Show"}
             >
-              <Icon name={showKey ? "info" : "search"} size={16} />
+              <Icon name={showKey ? "eyeOff" : "eye"} size={16} />
             </button>
           </div>
         </Field>

@@ -30,6 +30,8 @@ import {
   ShieldHalfIcon,
   TranslateIcon,
   SourceCodeIcon,
+  EyeIcon,
+  EyeOffIcon,
   Tick02Icon as CheckIcon,
 } from "@hugeicons/core-free-icons";
 
@@ -66,6 +68,8 @@ export const Icons = {
   shield: ShieldHalfIcon,
   translate: TranslateIcon,
   source: SourceCodeIcon,
+  eye: EyeIcon,
+  eyeOff: EyeOffIcon,
 } as const;
 
 export type IconName = keyof typeof Icons;

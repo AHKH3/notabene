@@ -40,7 +40,7 @@ export function Note() {
       <header className="flex items-center gap-2 border-b border-line px-4 py-3">
         <Icon name="note" size={18} className="text-ink-2" />
         <h2 className="font-display text-base tracking-tight">{t.note}</h2>
-        <span className="text-xs text-ink-3">· {words} {t.words}</span>
+        <span className="text-xs text-ink-3">· {words} {words === 1 ? t.wordSingular : t.wordPlural}</span>
         <span className="flex-1" />
 
         {!inPreview ? (
@@ -76,7 +76,7 @@ export function Note() {
         </button>
         <button
           onClick={() => {
-            if (note.trim() && window.confirm(t.clearNote + "؟")) setNote("");
+            if (note.trim() && window.confirm(t.clearNoteConfirm)) setNote("");
             else if (!note.trim()) setNote("");
           }}
           aria-label={t.clearNote}
