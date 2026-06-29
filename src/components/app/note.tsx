@@ -9,6 +9,27 @@ import { renderMarkdown } from "@/lib/markdown";
 import { errorText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
+/* — Shared pane header with optional focus indicator — */
+function PaneHeader({ label, focus }: { label: string; focus?: boolean }) {
+  return (
+    <div className="flex shrink-0 items-center gap-2 border-b border-line px-5 py-[7px]">
+      <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-ink-3">
+        {label}
+      </span>
+      <span
+        className={cn(
+          "inline-block h-1 w-1 rounded-full motion-safe:transition-colors motion-safe:duration-200",
+          focus !== undefined
+            ? focus
+              ? "bg-ink/60"
+              : "bg-ink-3/25"
+            : "bg-ink-3/15",
+        )}
+      />
+    </div>
+  );
+}
+
 export function Note() {
   const { active, setNote, dict, settings, isConfigured, dir } = useStore();
   const curator = useCurator();
@@ -17,6 +38,8 @@ export function Note() {
   const [previewTab, setPreviewTab] = useState<"proposed" | "current">("proposed");
   const [copied, setCopied] = useState(false);
   const [focus, setFocus] = useState(false);
+  const [expandedPreview, setExpandedPreview] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 });
   const dragRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [splitRatio, setSplitRatio] = useState(0.5);
@@ -111,12 +134,38 @@ export function Note() {
     [setNote],
   );
 
+  /* — Track cursor line/col position — */
+  const updateCursorPos = useCallback(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const upTo = ta.value.slice(0, ta.selectionStart);
+    const line = upTo.split("\n").length;
+    const col = upTo.length - upTo.lastIndexOf("\n");
+    setCursorPos({ line, col });
+  }, []);
+
+  /* — Toggle between split and full‑preview — */
+  const togglePreviewMode = useCallback(() => {
+    setExpandedPreview((p) => !p);
+  }, []);
+
   return (
     <div className="relative flex h-full w-full flex-col bg-paper">
       <header className="flex items-center gap-2 border-b border-line px-4 py-3">
         <Icon name="note" size={18} className="text-ink-2" />
         <h2 className="font-display text-base tracking-tight">{t.note}</h2>
-        <span className="text-xs text-ink-3">· {words} {words === 1 ? t.wordSingular : t.wordPlural}</span>
+        <span className="hidden text-xs text-ink-3 sm:inline">
+          · <span dir="ltr">{note.length}</span>{" "}
+          <span className="text-ink-3/50">ch</span>
+        </span>
+        <span className="text-xs text-ink-3">
+          · {words} {words === 1 ? t.wordSingular : t.wordPlural}
+        </span>
+        {focus && note.trim() && (
+          <span className="hidden text-xs text-ink-3/60 md:inline">
+            · Ln {cursorPos.line}, Col {cursorPos.col}
+          </span>
+        )}
         <span className="flex-1" />
 
         <button
@@ -208,93 +257,89 @@ export function Note() {
             className="flex h-full select-none flex-col md:flex-row"
           >
             {/* ---- Writing pane ---- */}
-            <div
-              className="relative flex min-h-0 flex-col overflow-hidden"
-              style={{
-                flexBasis: `${splitRatio * 100}%`,
-                flexGrow: 0,
-                flexShrink: 0,
-              }}
-            >
-              <div className="flex shrink-0 items-center gap-2 border-b border-line px-5 py-[7px]">
-                <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-ink-3">
-                  {t.writeTab}
-                </span>
-                <span
-                  className={cn(
-                    "inline-block h-1 w-1 rounded-full motion-safe:transition-colors motion-safe:duration-200",
-                    focus ? "bg-ink/60" : "bg-ink-3/25",
-                  )}
+            {!expandedPreview && (
+              <div
+                className="relative flex min-h-0 flex-col overflow-hidden"
+                style={{
+                  flexBasis: `${splitRatio * 100}%`,
+                  flexGrow: 0,
+                  flexShrink: 0,
+                }}
+              >
+                <PaneHeader label={t.writeTab} focus={focus} />
+                <textarea
+                  ref={textareaRef}
+                  value={note}
+                  disabled={!active}
+                  onChange={(e) => setNote(e.target.value)}
+                  onScroll={syncFromTextarea}
+                  onFocus={() => setFocus(true)}
+                  onBlur={() => setFocus(false)}
+                  onKeyDown={onTextareaKeyDown}
+                  onKeyUp={updateCursorPos}
+                  onClick={updateCursorPos}
+                  placeholder={t.notePlaceholder}
+                  spellCheck={false}
+                  className="ruled flex-1 resize-none bg-transparent px-5 py-[14px] font-serif text-[15px] leading-[1.85] text-ink outline-none placeholder:text-ink-3 selection:bg-ink selection:text-paper"
+                  aria-label={t.writeTab}
                 />
               </div>
-              <textarea
-                ref={textareaRef}
-                value={note}
-                disabled={!active}
-                onChange={(e) => setNote(e.target.value)}
-                onScroll={syncFromTextarea}
-                onFocus={() => setFocus(true)}
-                onBlur={() => setFocus(false)}
-                onKeyDown={onTextareaKeyDown}
-                placeholder={t.notePlaceholder}
-                spellCheck={false}
-                className="ruled flex-1 resize-none bg-transparent px-5 py-[14px] font-serif text-[15px] leading-[1.85] text-ink outline-none placeholder:text-ink-3 selection:bg-ink selection:text-paper"
-                aria-label={t.writeTab}
-              />
-            </div>
+            )}
 
             {/* ---- Draggable divider ---- */}
-            <div
-              onPointerDown={(e) => {
-                dragRef.current = true;
-                (e.target as HTMLElement).setPointerCapture(e.pointerId);
-              }}
-              onPointerMove={(e) => {
-                if (dragRef.current) onSplitDrag(e.clientX);
-              }}
-              onPointerUp={() => {
-                dragRef.current = false;
-              }}
-              onDoubleClick={resetSplit}
-              role="separator"
-              aria-valuenow={Math.round(splitRatio * 100)}
-              aria-valuemin={25}
-              aria-valuemax={75}
-              aria-label={dir === 'rtl' ? 'مُقسّم' : 'Splitter'}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                const step = 0.05;
-                if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-                  e.preventDefault();
-                  setSplitRatio((r) => Math.max(r - step, 0.25));
-                }
-                if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-                  e.preventDefault();
-                  setSplitRatio((r) => Math.min(r + step, 0.75));
-                }
-              }}
-              title={
-                dir === 'rtl'
-                  ? 'اسحب لتغيير حجم الأقسام'
-                  : 'Drag to resize panes'
-              }
-              className="group relative hidden shrink-0 cursor-col-resize select-none md:block motion-safe:transition-colors motion-safe:duration-150"
-              style={{ width: 16 }}
-            >
-              {/* Vertical rule */}
-              <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-line" />
-              {/* Center dot */}
+            {!expandedPreview && (
               <div
-                className={cn(
-                  "pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center motion-safe:transition-all motion-safe:duration-200",
-                  focus ? "opacity-100" : "opacity-50",
-                )}
+                onPointerDown={(e) => {
+                  dragRef.current = true;
+                  (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                }}
+                onPointerMove={(e) => {
+                  if (dragRef.current) onSplitDrag(e.clientX);
+                }}
+                onPointerUp={() => {
+                  dragRef.current = false;
+                }}
+                onDoubleClick={resetSplit}
+                role="separator"
+                aria-valuenow={Math.round(splitRatio * 100)}
+                aria-valuemin={25}
+                aria-valuemax={75}
+                aria-label={dir === 'rtl' ? 'مُقسّم' : 'Splitter'}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  const step = 0.05;
+                  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setSplitRatio((r) => Math.max(r - step, 0.25));
+                  }
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setSplitRatio((r) => Math.min(r + step, 0.75));
+                  }
+                }}
+                title={
+                  dir === 'rtl'
+                    ? 'اسحب لتغيير حجم الأقسام'
+                    : 'Drag to resize panes'
+                }
+                className="group relative hidden shrink-0 cursor-col-resize select-none md:block motion-safe:transition-colors motion-safe:duration-150"
+                style={{ width: 16 }}
               >
-                <span className="flex h-2 w-2 items-center justify-center rounded-full border border-line-2 bg-paper transition-transform duration-200 group-hover:scale-125 group-focus-visible:scale-125">
-                  <span className="block h-[1.5px] w-[1.5px] rounded-full bg-ink-3/60" />
-                </span>
+                {/* Vertical rule */}
+                <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-line" />
+                {/* Center dot */}
+                <div
+                  className={cn(
+                    "pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center motion-safe:transition-all motion-safe:duration-200",
+                    focus ? "opacity-100" : "opacity-50",
+                  )}
+                >
+                  <span className="flex h-2 w-2 items-center justify-center rounded-full border border-line-2 bg-paper transition-transform duration-200 group-hover:scale-125 group-focus-visible:scale-125">
+                    <span className="block h-[1.5px] w-[1.5px] rounded-full bg-ink-3/60" />
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* ---- Preview pane ---- */}
             <div
@@ -307,6 +352,23 @@ export function Note() {
                   {t.readTab}
                 </span>
                 <span className="inline-block h-1 w-1 rounded-full bg-ink-3/15" />
+                <span className="flex-1" />
+                <button
+                  onClick={togglePreviewMode}
+                  aria-label={
+                    expandedPreview
+                      ? "Show writing pane"
+                      : "Hide writing pane"
+                  }
+                  title={
+                    expandedPreview
+                      ? "Show writing pane"
+                      : "Hide writing pane"
+                  }
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-sm text-ink-3 hover:text-ink motion-safe:transition-colors motion-safe:duration-150"
+                >
+                  <Icon name={expandedPreview ? "eye" : "eyeOff"} size={13} strokeWidth={1.8} />
+                </button>
               </div>
               <div
                 ref={previewRef}
