@@ -16,6 +16,7 @@ export function Note() {
 
   const [previewTab, setPreviewTab] = useState<"proposed" | "current">("proposed");
   const [copied, setCopied] = useState(false);
+  const [focus, setFocus] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -165,12 +166,18 @@ export function Note() {
         ) : (
           /* ---- Unified mode: write + live preview side by side ---- */
           <div className="flex h-full flex-col md:flex-row">
-            {/* ---- Textarea ---- */}
-            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-b border-line md:border-b-0 md:border-e">
-              <div className="flex items-center justify-between border-b border-line px-4 py-1.5">
-                <span className="text-[10px] uppercase tracking-[0.12em] text-ink-3">
+            {/* ---- Writing pane ---- */}
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+              <div className="flex shrink-0 items-center gap-2 border-b border-line px-5 py-[7px]">
+                <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-ink-3">
                   {t.writeTab}
                 </span>
+                <span
+                  className={cn(
+                    "inline-block h-1 w-1 rounded-full transition-colors duration-200",
+                    focus ? "bg-ink/60" : "bg-ink-3/25",
+                  )}
+                />
               </div>
               <textarea
                 ref={textareaRef}
@@ -178,23 +185,41 @@ export function Note() {
                 disabled={!active}
                 onChange={(e) => setNote(e.target.value)}
                 onScroll={syncFromTextarea}
+                onFocus={() => setFocus(true)}
+                onBlur={() => setFocus(false)}
                 placeholder={t.notePlaceholder}
                 spellCheck={false}
-                className="ruled flex-1 resize-none bg-transparent px-5 py-4 font-serif text-[15px] leading-[1.85] text-ink outline-none placeholder:text-ink-3"
+                className="ruled flex-1 resize-none bg-transparent px-5 py-[14px] font-serif text-[15px] leading-[1.85] text-ink outline-none placeholder:text-ink-3 selection:bg-ink selection:text-paper"
               />
             </div>
 
-            {/* ---- Live preview ---- */}
-            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-              <div className="flex items-center justify-between border-b border-line px-4 py-1.5">
-                <span className="text-[10px] uppercase tracking-[0.12em] text-ink-3">
+            {/* ---- Elegant divider ---- */}
+            <div className="relative hidden shrink-0 md:block" style={{ width: 13 }}>
+              <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-line" />
+              <div
+                className={cn(
+                  "absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center transition-all duration-200",
+                  focus ? "opacity-100" : "opacity-50",
+                )}
+              >
+                <span className="flex h-[7px] w-[7px] items-center justify-center rounded-full border border-line-2 bg-paper">
+                  <span className="block h-[1px] w-[1px] rounded-full bg-ink-3/50" />
+                </span>
+              </div>
+            </div>
+
+            {/* ---- Preview pane ---- */}
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-t border-line md:border-t-0">
+              <div className="flex shrink-0 items-center gap-2 border-b border-line px-5 py-[7px]">
+                <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-ink-3">
                   {t.readTab}
                 </span>
+                <span className="inline-block h-1 w-1 rounded-full bg-ink-3/15" />
               </div>
               <div
                 ref={previewRef}
                 onScroll={syncFromPreview}
-                className="flex-1 overflow-y-auto px-5 py-4"
+                className="flex-1 overflow-y-auto px-5 py-[14px]"
               >
                 {note.trim() ? (
                   <div
