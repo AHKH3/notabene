@@ -104,7 +104,9 @@ export function Sidebar({
       {/* List */}
       <nav className="mt-3 flex-1 overflow-y-auto px-2 pb-2">
         {filtered.length === 0 ? (
-          <p className="px-3 py-6 text-center text-sm text-ink-3">{t.empty}</p>
+          <p className="px-3 py-6 text-center text-sm text-ink-3">
+            {query.trim() ? t.noResults : t.empty}
+          </p>
         ) : (
           <ul className="space-y-0.5">
             {filtered.map((c) => (

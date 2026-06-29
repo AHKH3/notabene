@@ -107,6 +107,7 @@ export function SettingsModal({
               <button
                 key={p.id}
                 onClick={() => pickProvider(p.id)}
+                aria-pressed={current.id === p.id}
                 className={cn(
                   "rounded-sm border px-2.5 py-1 text-xs transition-colors",
                   current.id === p.id
@@ -211,6 +212,7 @@ export function SettingsModal({
             onChange={(e) =>
               updateSettings({ temperature: Number(e.target.value) })
             }
+            aria-label={`${t.temperature} · ${settings.temperature.toFixed(1)}`}
             className="w-full accent-[var(--ink)]"
           />
         </Field>
@@ -271,7 +273,7 @@ export function SettingsModal({
 
       <div className="flex justify-end border-t border-line px-5 py-4">
         <Button variant="solid" onClick={onClose}>
-          {t.save}
+          {t.done}
         </Button>
       </div>
     </Modal>

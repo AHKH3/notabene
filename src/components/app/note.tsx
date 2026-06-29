@@ -76,8 +76,8 @@ export function Note() {
         </button>
         <button
           onClick={() => {
-            if (note.trim() && window.confirm(t.clearNoteConfirm)) setNote("");
-            else if (!note.trim()) setNote("");
+            if (note.trim() && !window.confirm(t.clearNoteConfirm)) return;
+            setNote("");
           }}
           aria-label={t.clearNote}
           title={t.clearNote}

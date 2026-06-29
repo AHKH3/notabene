@@ -1,6 +1,7 @@
-polish(🌐,🧹): round 3 of refinements
+polish(♿,🧹): round 4 of refinements
 
-- i18n: replace hardcoded "You"/"AI"/"أنت"/"الذكاء" labels with t.you/t.ai
-- fix: clear chat input when switching active conversation
-- i18n: replace hardcoded "Hide"/"Show" with t.hideKey/t.showKey in settings
-- cleanup: remove unused isArabic prop from Bubble component
+- fix: rename settings "Save" button to "Done" (everything auto-saves; "Save" was misleading)
+- a11y: add aria-pressed to provider selection buttons
+- a11y: add aria-label to temperature range slider
+- fix: differentiate "no conversations" from "no search results" in sidebar
+- fix: clean up dead code path in note clear-note handler

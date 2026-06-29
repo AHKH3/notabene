@@ -102,6 +102,7 @@ export const dict = {
       conversations: "Conversations",
       untitled: "Untitled",
       empty: "Nothing here yet.",
+      noResults: "No conversations found.",
       searchPlaceholder: "Search conversations",
       deleteConfirm: "Delete this conversation?",
       delete: "Delete",
@@ -169,6 +170,7 @@ export const dict = {
       system: "System",
       language: "Language",
       save: "Save",
+      done: "Done",
       close: "Close",
       clearAll: "Clear all local data",
       clearAllConfirm:
@@ -286,6 +288,7 @@ export const dict = {
       conversations: "المحادثات",
       untitled: "بلا عنوان",
       empty: "لا شيء بعد.",
+      noResults: "لم يُعثَر على محادثات.",
       searchPlaceholder: "ابحث في المحادثات",
       deleteConfirm: "حذف هذه المحادثة؟",
       delete: "حذف",
@@ -353,6 +356,7 @@ export const dict = {
       system: "النظام",
       language: "اللغة",
       save: "حفظ",
+      done: "تم",
       close: "إغلاق",
       clearAll: "مسح كل البيانات المحلية",
       clearAllConfirm:
