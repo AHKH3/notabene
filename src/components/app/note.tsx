@@ -10,13 +10,16 @@ import { errorText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function Note() {
-  const { active, setNote, dict, settings, isConfigured } = useStore();
+  const { active, setNote, dict, settings, isConfigured, dir } = useStore();
   const curator = useCurator();
   const t = dict.app;
 
   const [previewTab, setPreviewTab] = useState<"proposed" | "current">("proposed");
   const [copied, setCopied] = useState(false);
   const [focus, setFocus] = useState(false);
+  const dragRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [splitRatio, setSplitRatio] = useState(0.5);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -72,6 +75,41 @@ export function Note() {
 
   /* — Memoised Markdown render — */
   const renderedHtml = useMemo(() => renderMarkdown(note), [note]);
+
+  /* — Draggable split: updates the writing‑pane ratio on pointer drag — */
+  const onSplitDrag = useCallback(
+    (clientX: number) => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      let r = (clientX - rect.left) / rect.width;
+      if (dir === "rtl") r = 1 - r;
+      setSplitRatio(Math.min(Math.max(r, 0.25), 0.75));
+    },
+    [dir],
+  );
+
+  const resetSplit = useCallback(() => setSplitRatio(0.5), []);
+
+  /* — Tab → 2‑space indent inside the textarea — */
+  const onTextareaKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        const ta = textareaRef.current;
+        if (!ta) return;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const val = ta.value;
+        const newVal = val.slice(0, start) + "  " + val.slice(end);
+        setNote(newVal);
+        requestAnimationFrame(() => {
+          ta.selectionStart = ta.selectionEnd = start + 2;
+        });
+      }
+    },
+    [setNote],
+  );
 
   return (
     <div className="relative flex h-full w-full flex-col bg-paper">
@@ -165,16 +203,26 @@ export function Note() {
           </div>
         ) : (
           /* ---- Unified mode: write + live preview side by side ---- */
-          <div className="flex h-full flex-col md:flex-row">
+          <div
+            ref={containerRef}
+            className="flex h-full select-none flex-col md:flex-row"
+          >
             {/* ---- Writing pane ---- */}
-            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div
+              className="relative flex min-h-0 flex-col overflow-hidden"
+              style={{
+                flexBasis: `${splitRatio * 100}%`,
+                flexGrow: 0,
+                flexShrink: 0,
+              }}
+            >
               <div className="flex shrink-0 items-center gap-2 border-b border-line px-5 py-[7px]">
                 <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-ink-3">
                   {t.writeTab}
                 </span>
                 <span
                   className={cn(
-                    "inline-block h-1 w-1 rounded-full transition-colors duration-200",
+                    "inline-block h-1 w-1 rounded-full motion-safe:transition-colors motion-safe:duration-200",
                     focus ? "bg-ink/60" : "bg-ink-3/25",
                   )}
                 />
@@ -187,29 +235,73 @@ export function Note() {
                 onScroll={syncFromTextarea}
                 onFocus={() => setFocus(true)}
                 onBlur={() => setFocus(false)}
+                onKeyDown={onTextareaKeyDown}
                 placeholder={t.notePlaceholder}
                 spellCheck={false}
                 className="ruled flex-1 resize-none bg-transparent px-5 py-[14px] font-serif text-[15px] leading-[1.85] text-ink outline-none placeholder:text-ink-3 selection:bg-ink selection:text-paper"
+                aria-label={t.writeTab}
               />
             </div>
 
-            {/* ---- Elegant divider ---- */}
-            <div className="relative hidden shrink-0 md:block" style={{ width: 13 }}>
-              <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-line" />
+            {/* ---- Draggable divider ---- */}
+            <div
+              onPointerDown={(e) => {
+                dragRef.current = true;
+                (e.target as HTMLElement).setPointerCapture(e.pointerId);
+              }}
+              onPointerMove={(e) => {
+                if (dragRef.current) onSplitDrag(e.clientX);
+              }}
+              onPointerUp={() => {
+                dragRef.current = false;
+              }}
+              onDoubleClick={resetSplit}
+              role="separator"
+              aria-valuenow={Math.round(splitRatio * 100)}
+              aria-valuemin={25}
+              aria-valuemax={75}
+              aria-label={dir === 'rtl' ? 'مُقسّم' : 'Splitter'}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                const step = 0.05;
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setSplitRatio((r) => Math.max(r - step, 0.25));
+                }
+                if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setSplitRatio((r) => Math.min(r + step, 0.75));
+                }
+              }}
+              title={
+                dir === 'rtl'
+                  ? 'اسحب لتغيير حجم الأقسام'
+                  : 'Drag to resize panes'
+              }
+              className="group relative hidden shrink-0 cursor-col-resize select-none md:block motion-safe:transition-colors motion-safe:duration-150"
+              style={{ width: 16 }}
+            >
+              {/* Vertical rule */}
+              <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-line" />
+              {/* Center dot */}
               <div
                 className={cn(
-                  "absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center transition-all duration-200",
+                  "pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center motion-safe:transition-all motion-safe:duration-200",
                   focus ? "opacity-100" : "opacity-50",
                 )}
               >
-                <span className="flex h-[7px] w-[7px] items-center justify-center rounded-full border border-line-2 bg-paper">
-                  <span className="block h-[1px] w-[1px] rounded-full bg-ink-3/50" />
+                <span className="flex h-2 w-2 items-center justify-center rounded-full border border-line-2 bg-paper transition-transform duration-200 group-hover:scale-125 group-focus-visible:scale-125">
+                  <span className="block h-[1.5px] w-[1.5px] rounded-full bg-ink-3/60" />
                 </span>
               </div>
             </div>
 
             {/* ---- Preview pane ---- */}
-            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-t border-line md:border-t-0">
+            <div
+              className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-t border-line md:border-t-0"
+              role="region"
+              aria-label={t.readTab}
+            >
               <div className="flex shrink-0 items-center gap-2 border-b border-line px-5 py-[7px]">
                 <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-ink-3">
                   {t.readTab}
@@ -229,11 +321,8 @@ export function Note() {
                 ) : (
                   <p className="text-sm italic text-ink-3">{t.notePlaceholder}</p>
                 )}
-                {/* Invisible sentinel so the preview scrolls proportionally
-                    with the textarea even when content is short */}
-                {note.trim() && (
-                  <div className="h-px" aria-hidden />
-                )}
+                {/* Ensure preview scrolls proportionally with textarea */}
+                {note.trim() && <div className="h-px" aria-hidden />}
               </div>
             </div>
           </div>
