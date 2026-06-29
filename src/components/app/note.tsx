@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useStore } from "./store";
 import { useCurator } from "./curator-context";
 import { Icon } from "@/components/icon";
@@ -14,9 +14,12 @@ export function Note() {
   const curator = useCurator();
   const t = dict.app;
 
-  const [mode, setMode] = useState<"write" | "read">("write");
   const [previewTab, setPreviewTab] = useState<"proposed" | "current">("proposed");
   const [copied, setCopied] = useState(false);
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const isSyncing = useRef(false);
 
   const note = active?.note ?? "";
   const words = note.trim() ? note.trim().split(/\s+/).length : 0;
@@ -35,6 +38,40 @@ export function Note() {
 
   const inPreview = curator.proposal !== null;
 
+  /* — Synced scrolling between textarea and preview — */
+  const syncFromTextarea = useCallback(() => {
+    const ta = textareaRef.current;
+    const pv = previewRef.current;
+    if (!ta || !pv || isSyncing.current) return;
+    isSyncing.current = true;
+    const ratio =
+      ta.scrollHeight > ta.clientHeight
+        ? ta.scrollTop / (ta.scrollHeight - ta.clientHeight)
+        : 0;
+    pv.scrollTop = ratio * (pv.scrollHeight - pv.clientHeight);
+    requestAnimationFrame(() => {
+      isSyncing.current = false;
+    });
+  }, []);
+
+  const syncFromPreview = useCallback(() => {
+    const ta = textareaRef.current;
+    const pv = previewRef.current;
+    if (!ta || !pv || isSyncing.current) return;
+    isSyncing.current = true;
+    const ratio =
+      pv.scrollHeight > pv.clientHeight
+        ? pv.scrollTop / (pv.scrollHeight - pv.clientHeight)
+        : 0;
+    ta.scrollTop = ratio * (ta.scrollHeight - ta.clientHeight);
+    requestAnimationFrame(() => {
+      isSyncing.current = false;
+    });
+  }, []);
+
+  /* — Memoised Markdown render — */
+  const renderedHtml = useMemo(() => renderMarkdown(note), [note]);
+
   return (
     <div className="relative flex h-full w-full flex-col bg-paper">
       <header className="flex items-center gap-2 border-b border-line px-4 py-3">
@@ -42,29 +79,6 @@ export function Note() {
         <h2 className="font-display text-base tracking-tight">{t.note}</h2>
         <span className="text-xs text-ink-3">· {words} {words === 1 ? t.wordSingular : t.wordPlural}</span>
         <span className="flex-1" />
-
-        {!inPreview ? (
-          <div className="me-1 inline-flex rounded-sm border border-line p-0.5 text-xs">
-            <button
-              onClick={() => setMode("write")}
-              className={cn(
-                "rounded-[2px] px-2 py-0.5",
-                mode === "write" ? "bg-ink text-paper" : "text-ink-3 hover:text-ink",
-              )}
-            >
-              {t.writeTab}
-            </button>
-            <button
-              onClick={() => setMode("read")}
-              className={cn(
-                "rounded-[2px] px-2 py-0.5",
-                mode === "read" ? "bg-ink text-paper" : "text-ink-3 hover:text-ink",
-              )}
-            >
-              {t.readTab}
-            </button>
-          </div>
-        ) : null}
 
         <button
           onClick={copy}
@@ -148,25 +162,55 @@ export function Note() {
               </button>
             </div>
           </div>
-        ) : mode === "write" ? (
-          <textarea
-            value={note}
-            disabled={!active}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder={t.notePlaceholder}
-            spellCheck={false}
-            className="ruled h-full w-full resize-none bg-transparent px-5 py-4 font-serif text-[15px] leading-[1.85] text-ink outline-none placeholder:text-ink-3"
-          />
         ) : (
-          <div className="h-full overflow-y-auto px-5 py-4">
-            {note.trim() ? (
-              <div
-                className="prose-nb"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(note) }}
+          /* ---- Unified mode: write + live preview side by side ---- */
+          <div className="flex h-full flex-col md:flex-row">
+            {/* ---- Textarea ---- */}
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-b border-line md:border-b-0 md:border-e">
+              <div className="flex items-center justify-between border-b border-line px-4 py-1.5">
+                <span className="text-[10px] uppercase tracking-[0.12em] text-ink-3">
+                  {t.writeTab}
+                </span>
+              </div>
+              <textarea
+                ref={textareaRef}
+                value={note}
+                disabled={!active}
+                onChange={(e) => setNote(e.target.value)}
+                onScroll={syncFromTextarea}
+                placeholder={t.notePlaceholder}
+                spellCheck={false}
+                className="ruled flex-1 resize-none bg-transparent px-5 py-4 font-serif text-[15px] leading-[1.85] text-ink outline-none placeholder:text-ink-3"
               />
-            ) : (
-              <p className="text-sm italic text-ink-3">{t.notePlaceholder}</p>
-            )}
+            </div>
+
+            {/* ---- Live preview ---- */}
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+              <div className="flex items-center justify-between border-b border-line px-4 py-1.5">
+                <span className="text-[10px] uppercase tracking-[0.12em] text-ink-3">
+                  {t.readTab}
+                </span>
+              </div>
+              <div
+                ref={previewRef}
+                onScroll={syncFromPreview}
+                className="flex-1 overflow-y-auto px-5 py-4"
+              >
+                {note.trim() ? (
+                  <div
+                    className="prose-nb"
+                    dangerouslySetInnerHTML={{ __html: renderedHtml }}
+                  />
+                ) : (
+                  <p className="text-sm italic text-ink-3">{t.notePlaceholder}</p>
+                )}
+                {/* Invisible sentinel so the preview scrolls proportionally
+                    with the textarea even when content is short */}
+                {note.trim() && (
+                  <div className="h-px" aria-hidden />
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
