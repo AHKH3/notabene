@@ -7,6 +7,7 @@ import { Chat } from "./chat";
 import { Note } from "./note";
 import { SettingsModal } from "./settings";
 import { Icon } from "@/components/icon";
+import { Titlebar } from "@/components/electron/titlebar";
 import { clamp } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -89,6 +90,7 @@ export function AppShell() {
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
+        <Titlebar newConversation={newConversation} dir={dir} />
         {/* Mobile top bar */}
         <div className="flex items-center gap-2 border-b border-line px-2 py-2 md:hidden">
           <button

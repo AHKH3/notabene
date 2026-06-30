@@ -36,30 +36,25 @@ function isElectron(): boolean {
   return typeof window !== "undefined" && "electronAPI" in window;
 }
 
+/* ─── props ─── */
+
+interface TitlebarProps {
+  newConversation?: () => void;
+  dir?: "ltr" | "rtl";
+}
+
 /* ─── component ─── */
 
-export function Titlebar() {
-  // Only render when inside Electron — defer useStore until we know
+export function Titlebar({ newConversation, dir = "ltr" }: TitlebarProps) {
   const [electron, setElectron] = useState(false);
   const [maximized, setMaximized] = useState(false);
-  const [newConversation, setNewConversation] = useState<(() => void) | null>(null);
-  const [dir, setDir] = useState<"ltr" | "rtl">("ltr");
 
   useEffect(() => {
     if (!isElectron()) return;
     setElectron(true);
 
-    // Dynamically import store to avoid SSR issues
-    import("@/components/app/store").then(({ useStore }) => {
-      const store = useStore();
-      setNewConversation(() => store.newConversation);
-      setDir(store.dir);
-    });
-
-    // Query initial maximize state
     window.electronAPI!.isMaximized().then(setMaximized);
 
-    // Listen for changes
     const unsub = window.electronAPI!.onMaximizedChange((m) => setMaximized(m));
     return () => unsub();
   }, []);
