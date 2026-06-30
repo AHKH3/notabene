@@ -13,7 +13,6 @@ const nextConfig: NextConfig = {
   experimental: {
     cpus: 1,
     webpackBuildWorker: false,
-    turbo: false,
   },
 };
 

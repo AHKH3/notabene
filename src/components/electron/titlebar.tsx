@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/icon";
-import { useStore } from "@/components/app/store";
 
 /* ─── inline SVG window control icons ─── */
 
@@ -40,15 +39,22 @@ function isElectron(): boolean {
 /* ─── component ─── */
 
 export function Titlebar() {
-  const { newConversation, dir } = useStore();
-
-  // Only render when inside Electron
+  // Only render when inside Electron — defer useStore until we know
   const [electron, setElectron] = useState(false);
   const [maximized, setMaximized] = useState(false);
+  const [newConversation, setNewConversation] = useState<(() => void) | null>(null);
+  const [dir, setDir] = useState<"ltr" | "rtl">("ltr");
 
   useEffect(() => {
     if (!isElectron()) return;
     setElectron(true);
+
+    // Dynamically import store to avoid SSR issues
+    import("@/components/app/store").then(({ useStore }) => {
+      const store = useStore();
+      setNewConversation(() => store.newConversation);
+      setDir(store.dir);
+    });
 
     // Query initial maximize state
     window.electronAPI!.isMaximized().then(setMaximized);
@@ -86,7 +92,7 @@ export function Titlebar() {
       <div className="titlebar-nodrag flex items-center gap-0.5 pr-1">
         {/* New conversation */}
         <button
-          onClick={newConversation}
+          onClick={() => newConversation?.()}
           className="flex items-center justify-center w-[30px] h-[30px] rounded-[3px] text-ink-2 hover:text-ink hover:bg-paper-2 transition-colors active:scale-95"
           title={dir === "rtl" ? "محادثة جديدة" : "New conversation"}
         >
