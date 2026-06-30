@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "eslint",
     "dev:electron": "tsc -p tsconfig.electron.json && concurrently -n next,tsc,electron -c cyan,yellow,green \"next dev\" \"tsc -p tsconfig.electron.json --watch --preserveWatchOutput\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
-    "build:electron": "ELECTRON=1 next build --no-turbopack && tsc -p tsconfig.electron.json",
+    "build:electron": "ELECTRON=1 next build && tsc -p tsconfig.electron.json",
     "dist": "npm run build:electron && electron-builder --config electron-builder.yml",
     "dist:win": "npm run build:electron && electron-builder --config electron-builder.yml --win",
     "dist:linux": "npm run build:electron && electron-builder --config electron-builder.yml --linux",
