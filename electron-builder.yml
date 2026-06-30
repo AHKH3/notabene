@@ -1,0 +1,33 @@
+appId: com.notabene.app
+productName: Notabene
+afterPack: ./scripts/after-pack.js
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - dist-electron/**/*
+  - out/**/*
+  - node_modules/**/*
+  - package.json
+  - resources/**/*
+asarUnpack: []
+win:
+  target: nsis
+  icon: resources/icon.ico
+  signAndEditExecutable: false
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  packElevateHelper: false
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico
+mac:
+  target: dmg
+  icon: resources/icon.png
+  category: public.app-category.productivity
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: resources/icon.png
+  category: Office

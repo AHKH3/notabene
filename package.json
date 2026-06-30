@@ -1,12 +1,21 @@
 {
   "name": "notabene",
   "version": "0.1.0",
+  "description": "Think in the margin — a local-first, open-source AI thinking tool.",
   "private": true,
+  "main": "dist-electron/electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:electron": "tsc -p tsconfig.electron.json && concurrently -n next,tsc,electron -c cyan,yellow,green \"next dev\" \"tsc -p tsconfig.electron.json --watch --preserveWatchOutput\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "build:electron": "ELECTRON=1 next build && tsc -p tsconfig.electron.json",
+    "dist": "npm run build:electron && electron-builder --config electron-builder.yml",
+    "dist:win": "npm run build:electron && electron-builder --config electron-builder.yml --win",
+    "dist:linux": "npm run build:electron && electron-builder --config electron-builder.yml --linux",
+    "dist:mac": "npm run build:electron && electron-builder --config electron-builder.yml --mac",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.2.2",
@@ -22,9 +31,14 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^8.0.3"
   }
 }

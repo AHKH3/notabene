@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import { Titlebar } from "@/components/electron/titlebar";
 
 export const metadata: Metadata = {
   title: "App",
-  // The app screen is interactive and personal — keep it out of search results.
   robots: { index: false, follow: false },
 };
 
@@ -11,5 +11,10 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      <Titlebar />
+      {children}
+    </>
+  );
 }

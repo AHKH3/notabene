@@ -32,6 +32,13 @@ export function AppShell() {
     [dir],
   );
 
+  // Listen for Electron titlebar "open settings" event
+  useEffect(() => {
+    const handler = () => setSettingsOpen(true);
+    window.addEventListener("notabene:open-settings", handler);
+    return () => window.removeEventListener("notabene:open-settings", handler);
+  }, []);
+
   // Ctrl/Cmd + N → new conversation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
